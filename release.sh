@@ -70,15 +70,25 @@ echo "▶ Creating GitHub release…"
 # Check gh CLI is available
 if ! command -v gh &> /dev/null; then
     echo ""
-    echo "⚠️  'gh' CLI not found. Install it with: brew install gh"
+    echo "WARNING: 'gh' CLI not found. Install it with: brew install gh"
     echo "   Then run: gh release create $TAG Shortsify.dmg --title \"Shortsify $TAG\" --generate-notes"
     exit 0
+fi
+
+# Ensure 'workflow' scope is granted (needed for gh release create)
+if ! gh auth status 2>&1 | grep -q "workflow"; then
+    echo ""
+    echo "  GitHub needs one extra permission (workflow scope)."
+    echo "  A browser window will open — just click Authorize."
+    echo ""
+    gh auth refresh -h github.com -s workflow
 fi
 
 gh release create "$TAG" \
     Shortsify.dmg \
     --title "Shortsify $TAG" \
-    --generate-notes
+    --generate-notes \
+    --repo yooyplay/Shortsify
 
 echo ""
 echo "✅ Done! Release $TAG is live."
