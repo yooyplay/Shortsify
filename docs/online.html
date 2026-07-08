@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortsify Online - Convert Video in Your Browser</title>
+  <meta name="description" content="Convert any video to 9:16, 1:1, 4:5, or 16:9 format directly in your browser. 100% private - files never leave your device." />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+  <!-- Cross-origin isolation required for SharedArrayBuffer (ffmpeg.wasm dependency) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("coi-serviceworker.js").then(() => {
+        if (!window.crossOriginIsolated) location.reload();
+      });
+    }
+  </script>
+
+  <!-- FFmpeg.wasm v0.11 (self-contained, no cross-origin Worker issue) -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+</head>
+<body>
+
+<!-- ── AdSense Top Banner ─────────────────────────────────────── -->
+<div class="adsense-top">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="horizontal"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<!-- ── Nav ───────────────────────────────────────────────────── -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <img src="icon.png" alt="Shortsify" />
+    Shortsify
+  </a>
+  <div class="nav-links">
+    <a href="download.html">Download</a>
+    <a href="online.html">Use Online</a>
+    <a href="https://github.com/YOUR_USERNAME/shortsify" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<!-- ── Privacy hero banner ────────────────────────────────────── -->
+<div style="background:linear-gradient(90deg,rgba(99,102,241,0.12),rgba(168,85,247,0.12),rgba(236,72,153,0.12));border-bottom:1px solid var(--border);padding:14px 24px;text-align:center;">
+  <p style="font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:1.1rem">🔒</span>
+    <strong>Your files never leave your device.</strong>
+    <span style="color:var(--muted)">Conversion happens 100% in your browser using WebAssembly. Nothing is uploaded, stored, or sent anywhere - ever.</span>
+  </p>
+</div>
+
+<!-- ── Tool ──────────────────────────────────────────────────── -->
+<div class="page" style="max-width:640px;">
+
+  <h1 style="margin-bottom:6px;">Convert in your browser</h1>
+  <p>No install, no account, no uploads. Powered by <a href="https://ffmpegwasm.netlify.app" target="_blank">ffmpeg.wasm</a>.</p>
+
+  <!-- Loading state -->
+  <div id="loading-state" style="text-align:center;padding:48px;display:none;">
+    <div style="font-size:2rem;margin-bottom:12px;">⚙️</div>
+    <p style="color:var(--muted);">Loading ffmpeg.wasm (~30MB, one-time)…</p>
+    <div class="progress-bar-bg" style="max-width:280px;margin:16px auto 0;">
+      <div class="progress-bar" id="load-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Main tool (hidden until ffmpeg loaded) -->
+  <div id="tool" style="display:none;">
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="video/*" />
+      <div class="drop-zone-icon">🎬</div>
+      <h3 id="dz-title">Drop a video here</h3>
+      <p id="dz-sub">or click to choose a file · mp4, mov, avi, mkv…</p>
+    </div>
+
+    <!-- Format selector -->
+    <div class="ratio-picker" id="ratio-picker">
+      <button class="ratio-btn active" data-w="1080" data-h="1920">
+        <span class="r-label">9:16</span>
+        <span class="r-sub">Shorts / TikTok</span>
+      </button>
+      <button class="ratio-btn" data-w="1080" data-h="1080">
+        <span class="r-label">1:1</span>
+        <span class="r-sub">Instagram</span>
+      </button>
+      <button class="ratio-btn" data-w="1080" data-h="1350">
+        <span class="r-label">4:5</span>
+        <span class="r-sub">IG Feed</span>
+      </button>
+      <button class="ratio-btn" data-w="1920" data-h="1080">
+        <span class="r-label">16:9</span>
+        <span class="r-sub">YouTube</span>
+      </button>
+    </div>
+
+    <!-- Convert button -->
+    <button class="btn btn-primary" id="convert-btn" disabled style="width:100%;justify-content:center;font-size:15px;border-radius:12px;">
+      Choose a video to start
+    </button>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">Converting…</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <div id="download-wrap" style="display:none;text-align:center;padding:28px;background:var(--surface);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius);margin-top:20px;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">✅</div>
+      <h3 style="margin-bottom:6px;">Done!</h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:18px;" id="dl-filename"></p>
+      <a id="download-link" class="btn btn-primary" style="display:inline-flex;margin-bottom:16px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><rect x="3" y="19" width="18" height="2" rx="1"/></svg>
+        Download converted video
+      </a>
+      <br />
+      <button class="btn btn-secondary" id="reset-btn" style="font-size:13px;padding:8px 18px;">Convert another</button>
+    </div>
+
+  </div><!-- /#tool -->
+
+  <!-- Privacy callout -->
+  <div style="margin-top:32px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(236,72,153,0.08));border:1px solid rgba(168,85,247,0.2);border-radius:var(--radius);padding:20px 24px;">
+    <h4 style="margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span>🔒</span> How your privacy is protected</h4>
+    <ul style="color:var(--muted);font-size:.88rem;line-height:1.8;padding-left:18px;">
+      <li>Your video is processed entirely inside your browser using <strong>WebAssembly</strong></li>
+      <li>No file is ever uploaded to any server - not even ours</li>
+      <li>When you close the tab, everything is gone</li>
+      <li>You can even use this tool with your WiFi turned off</li>
+    </ul>
+  </div>
+
+  <!-- Prefer native app -->
+  <div style="text-align:center;margin-top:28px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px;">Want batch processing, drag-and-drop, and no ~30MB load time?</p>
+    <a href="download.html" class="btn btn-secondary" style="font-size:13px;padding:10px 22px;">
+      🖥️ Download the Mac app - it's free
+    </a>
+  </div>
+
+</div>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+  <p>Shortsify · <a href="https://github.com/YOUR_USERNAME/shortsify" target="_blank">Open source on GitHub</a> · Files never leave your device</p>
+</footer>
+
+<!-- ── Buy Me a Coffee ────────────────────────────────────────── -->
+<a href="https://buymeacoffee.com/YOUR_USERNAME" target="_blank" class="coffee-widget">
+  <span class="emoji">☕</span>
+  <span>Enjoy this free tool? Buy me a coffee</span>
+</a>
+
+<!-- ── JS ────────────────────────────────────────────────────── -->
+<script>
+(async () => {
+  const { createFFmpeg, fetchFile } = FFmpeg;
+
+  const ffmpeg = createFFmpeg({
+    log: false,
+    corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
+    progress: ({ ratio }) => {
+      const pct = Math.min(Math.round(ratio * 100), 99);
+      progressBar.style.width = pct + "%";
+      progressLbl.textContent = "Converting... " + pct + "%";
+    }
+  });
+
+  let selectedFile = null;
+  let selectedW = 1080, selectedH = 1920;
+
+  // Elements
+  const loadingEl   = document.getElementById("loading-state");
+  const toolEl      = document.getElementById("tool");
+  const dropZone    = document.getElementById("drop-zone");
+  const fileInput   = document.getElementById("file-input");
+  const dzTitle     = document.getElementById("dz-title");
+  const dzSub       = document.getElementById("dz-sub");
+  const convertBtn  = document.getElementById("convert-btn");
+  const progressWrap= document.getElementById("progress-wrap");
+  const progressBar = document.getElementById("progress-bar");
+  const progressLbl = document.getElementById("progress-label");
+  const downloadWrap= document.getElementById("download-wrap");
+  const downloadLink= document.getElementById("download-link");
+  const dlFilename  = document.getElementById("dl-filename");
+  const resetBtn    = document.getElementById("reset-btn");
+  const loadBar     = document.getElementById("load-bar");
+
+  // Load
+  loadingEl.style.display = "block";
+  try {
+    await ffmpeg.load();
+  } catch (e) {
+    loadingEl.innerHTML = `<p style="color:#ec4899">Failed to load ffmpeg.wasm. Try Chrome or Edge.<br><small>${e.message}</small></p>`;
+    return;
+  }
+  loadingEl.style.display = "none";
+  toolEl.style.display    = "block";
+
+  // Ratio buttons
+  document.querySelectorAll(".ratio-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".ratio-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedW = +btn.dataset.w;
+      selectedH = +btn.dataset.h;
+    });
+  });
+
+  // File selection
+  function setFile(file) {
+    if (!file || !file.type.startsWith("video/")) return;
+    selectedFile = file;
+    dzTitle.textContent = file.name;
+    dzSub.textContent   = (file.size / 1024 / 1024).toFixed(1) + " MB";
+    convertBtn.disabled = false;
+    convertBtn.textContent = "Convert";
+  }
+
+  fileInput.addEventListener("change", () => setFile(fileInput.files[0]));
+  dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    setFile(e.dataTransfer.files[0]);
+  });
+
+  // Convert
+  convertBtn.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    convertBtn.disabled = true;
+    downloadWrap.style.display = "none";
+    progressWrap.classList.add("visible");
+    progressBar.style.width = "0%";
+    progressLbl.textContent = "Converting...";
+
+    const ext     = selectedFile.name.split(".").pop() || "mp4";
+    const base    = selectedFile.name.replace(/\.[^.]+$/, "");
+    const outName = base + "_short." + ext;
+    const inName  = "input." + ext;
+    const outFile = "output." + ext;
+
+    const vf = "scale=" + selectedW + ":" + selectedH +
+               ":force_original_aspect_ratio=decrease,pad=" +
+               selectedW + ":" + selectedH + ":(ow-iw)/2:(oh-ih)/2:black";
+
+    try {
+      ffmpeg.FS("writeFile", inName, await fetchFile(selectedFile));
+      await ffmpeg.run(
+        "-i", inName,
+        "-vf", vf,
+        "-c:v", "libx264", "-crf", "18", "-preset", "fast",
+        "-c:a", "aac", "-b:a", "192k",
+        "-movflags", "+faststart",
+        "-y", outFile
+      );
+
+      const data = ffmpeg.FS("readFile", outFile);
+      const blob = new Blob([data.buffer], { type: "video/mp4" });
+      const url  = URL.createObjectURL(blob);
+
+      progressBar.style.width = "100%";
+      progressLbl.textContent = "Done!";
+      downloadLink.href       = url;
+      downloadLink.download   = outName;
+      dlFilename.textContent  = outName;
+
+      setTimeout(() => {
+        progressWrap.classList.remove("visible");
+        downloadWrap.style.display = "block";
+      }, 400);
+
+      // Cleanup FS
+      try { ffmpeg.FS("unlink", inName); ffmpeg.FS("unlink", outFile); } catch(_) {}
+
+    } catch (err) {
+      progressLbl.textContent = "Error: " + err.message;
+      progressBar.style.width = "0%";
+      convertBtn.disabled = false;
+    }
+  });
+
+  // Reset
+  resetBtn.addEventListener("click", () => {
+    selectedFile = null;
+    fileInput.value = "";
+    dzTitle.textContent = "Drop a video here";
+    dzSub.textContent   = "or click to choose a file";
+    convertBtn.disabled = true;
+    convertBtn.textContent = "Choose a video to start";
+    downloadWrap.style.display = "none";
+    progressWrap.classList.remove("visible");
+  });
+
+})();
+</script>
+
+</body>
+</html>
