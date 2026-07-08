@@ -71,12 +71,24 @@
       border-radius:5px; padding:2px 7px; font-family:'SF Mono',Menlo,monospace;
       font-size:.8rem;
     }
+    .step-body { min-width: 0; overflow: hidden; }
+    .terminal-wrap { position:relative; margin:12px 0; }
     .terminal-block {
       background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
-      border-radius:8px; padding:12px 14px; margin:12px 0;
+      border-radius:8px; padding:12px 14px; padding-right:44px;
       font-family:'SF Mono',Menlo,monospace; font-size:12px;
       color:#a5f3a5; white-space:pre-wrap; word-break:break-all;
+      margin:0;
     }
+    .copy-btn {
+      position:absolute; top:8px; right:8px;
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+      border-radius:6px; padding:4px 8px; cursor:pointer;
+      font-size:11px; color:rgba(255,255,255,0.5);
+      transition:background .15s, color .15s;
+    }
+    .copy-btn:hover { background:rgba(255,255,255,0.15); color:#fff; }
+    .copy-btn.copied { color:#a5f3a5; border-color:rgba(165,243,165,0.3); }
   </style>
 </head>
 <body>
@@ -178,7 +190,7 @@
 
           <p>This happens with any app not sold through Apple's store. It doesn't mean anything is wrong. Shortsify is <a href="https://github.com/yooyplay/shortsify" target="_blank">open source</a>.</p>
           <p style="margin-top:10px;">To open it anyway, open <strong>Terminal</strong> (<kbd>⌘ Space</kbd>, type Terminal, hit Enter) and run:</p>
-          <pre class="terminal-block">xattr -cr /Applications/Shortsify.app</pre>
+          <div class="terminal-wrap"><pre class="terminal-block">xattr -cr /Applications/Shortsify.app</pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
           <p>Then double-click Shortsify normally. You only need to do this once.</p>
         </div>
       </div>
@@ -216,7 +228,7 @@
         <div class="step-body">
           <h4>Install Homebrew (skip if you already have it)</h4>
           <p>Open Terminal (<kbd>⌘ Space</kbd> → type <em>Terminal</em>) and run:</p>
-          <pre class="terminal-block">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</pre>
+          <div class="terminal-wrap"><pre class="terminal-block">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </div>
       </div>
 
@@ -224,9 +236,9 @@
         <div class="step-num">2</div>
         <div class="step-body">
           <h4>Install Shortsify</h4>
-          <pre class="terminal-block">brew tap yooyplay/tap
+          <div class="terminal-wrap"><pre class="terminal-block">brew tap yooyplay/tap
 brew trust yooyplay/tap
-brew install --cask shortsify</pre>
+brew install --cask shortsify</pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
           <p style="margin-top:10px;font-size:.83rem;color:var(--muted);">Homebrew downloads and installs it. No security warnings.</p>
         </div>
       </div>
@@ -235,7 +247,7 @@ brew install --cask shortsify</pre>
         <div class="step-num">3</div>
         <div class="step-body">
           <h4>Update anytime with one command</h4>
-          <pre class="terminal-block">brew upgrade --cask shortsify</pre>
+          <div class="terminal-wrap"><pre class="terminal-block">brew upgrade --cask shortsify</pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </div>
       </div>
 
@@ -273,6 +285,14 @@ brew install --cask shortsify</pre>
 </a>
 
 <script>
+function copyCode(btn) {
+  var text = btn.previousElementSibling.innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
 function switchTab(tab) {
   document.querySelectorAll('.method-tab').forEach(function(t, i) {
     t.classList.toggle('active', (tab === 'dmg' && i === 0) || (tab === 'brew' && i === 1));
