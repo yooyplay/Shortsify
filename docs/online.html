@@ -213,9 +213,15 @@
 
 
 <!-- ── Ko-fi ───────────────────────────────────────────────────── -->
-<a href="https://ko-fi.com/W8T622UOKJ" target="_blank" class="kofi-widget">
-  ☕ Support me on Ko-fi
-</a>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('yooyplay', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#00b9fe',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
 
 <!-- ── JS ────────────────────────────────────────────────────── -->
 <script>
