@@ -31,7 +31,7 @@
   <div class="nav-links">
     <a href="download.html">Download</a>
     <a href="online.html">Use Online</a>
-    <a href="https://github.com/YOUR_USERNAME/shortsify" target="_blank">GitHub</a>
+    <a href="https://github.com/yooyplay/shortsify" target="_blank">GitHub</a>
   </div>
 </nav>
 
@@ -45,15 +45,15 @@
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;">
     <span class="badge">macOS 14+</span>
     <span class="badge" style="background:rgba(168,85,247,0.12);color:var(--a2);border-color:rgba(168,85,247,0.3);">Apple Silicon &amp; Intel</span>
-    <span class="badge" style="background:rgba(236,72,153,0.12);color:#ec4899;border-color:rgba(236,72,153,0.3);">Requires ffmpeg</span>
+    <span class="badge" style="background:rgba(99,102,241,0.12);color:var(--a1);border-color:rgba(99,102,241,0.3);">No setup required</span>
   </div>
 
   <!-- Download Button -->
   <div style="text-align:center;margin-bottom:48px;">
-    <a href="https://github.com/YOUR_USERNAME/shortsify/releases/latest/download/Shortsify.app.zip"
+    <a href="https://github.com/yooyplay/shortsify/releases/latest/download/Shortsify.dmg"
        class="btn btn-primary" style="font-size:16px;padding:16px 40px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><rect x="3" y="19" width="18" height="2" rx="1"/></svg>
-      Download Shortsify.app.zip
+      Download Shortsify.dmg
     </a>
     <p style="margin-top:12px;color:var(--muted);font-size:.82rem;">Free · No signup · v1.0.0</p>
   </div>
@@ -65,46 +65,27 @@
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <h4>Install ffmpeg</h4>
-        <p>Shortsify uses ffmpeg under the hood. If you don't have it:</p>
-        <br />
-        <code>brew install ffmpeg</code>
-        <p style="margin-top:8px;">Don't have Homebrew? <a href="https://brew.sh" target="_blank">Install it here ↗</a></p>
+        <h4>Open the DMG and drag to Applications</h4>
+        <p>Double-click <code>Shortsify.dmg</code>, then drag <code>Shortsify</code> into the Applications folder shown in the window.</p>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <h4>Unzip and move to Applications</h4>
-        <p>Double-click the downloaded zip. Then drag <code>Shortsify.app</code> into your <code>/Applications</code> folder.</p>
+        <h4>Bypass the "unrecognized developer" warning</h4>
+        <p>Because Shortsify isn't signed with an Apple Developer certificate, macOS will block the first launch. Right-click <code>Shortsify.app</code> → <em>Open</em> → click <em>Open</em> in the dialog. You only need to do this once.</p>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <h4>Bypass the "unrecognized developer" warning</h4>
-        <p>Because Shortsify isn't signed with an Apple Developer certificate, macOS will block the first launch. Here's how to open it:</p>
-        <br />
-        <p><strong>Option A (easiest):</strong> Right-click <code>Shortsify.app</code> → <em>Open</em> → click <em>Open</em> in the dialog. You only need to do this once.</p>
-        <br />
-        <p><strong>Option B:</strong> Go to <em>System Settings → Privacy &amp; Security</em>, scroll down, and click <em>"Open Anyway"</em> next to the Shortsify message.</p>
-        <br />
-        <p><strong>Option C (Terminal):</strong></p>
-        <br />
-        <code>xattr -cr /Applications/Shortsify.app</code>
-        <p style="margin-top:6px;">Then open normally.</p>
+        <h4>That's it — no setup needed</h4>
+        <p>On first launch, Shortsify automatically downloads everything it needs. Just drop a video and go.</p>
       </div>
     </div>
 
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h4>You're done!</h4>
-        <p>Drop any video onto the window, pick your output format(s), and Shortsify handles the rest.</p>
-      </div>
-    </div>
   </div>
 
   <!-- Privacy note -->
@@ -127,11 +108,11 @@
 
 <!-- ── Footer ─────────────────────────────────────────────────── -->
 <footer>
-  <p>Shortsify is open source · <a href="https://github.com/YOUR_USERNAME/shortsify" target="_blank">View on GitHub</a></p>
+  <p>Shortsify is open source · <a href="https://github.com/yooyplay/shortsify" target="_blank">View on GitHub</a></p>
 </footer>
 
 <!-- ── Buy Me a Coffee ────────────────────────────────────────── -->
-<a href="https://buymeacoffee.com/YOUR_USERNAME" target="_blank" class="coffee-widget">
+<a href="https://buymeacoffee.com/yooyplay" target="_blank" class="coffee-widget">
   <span class="emoji">☕</span>
   <span>Enjoy this free tool? Buy me a coffee</span>
 </a>
