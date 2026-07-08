@@ -7,7 +7,77 @@
   <meta name="description" content="Download Shortsify - free Mac app to convert videos to YouTube Shorts format." />
   <link rel="icon" type="image/png" href="icon.png" />
   <link rel="stylesheet" href="style.css" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3979207653094537" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    .method-tabs { display:flex; gap:12px; margin-bottom:32px; }
+    .method-tab {
+      flex:1; padding:16px; border-radius:var(--radius);
+      border:1.5px solid var(--border); background:var(--surface);
+      cursor:pointer; text-align:center; transition:border-color .2s, background .2s;
+    }
+    .method-tab.active {
+      border-color:var(--a2); background:rgba(168,85,247,0.08);
+    }
+    .method-tab .tab-icon { font-size:1.6rem; margin-bottom:6px; }
+    .method-tab .tab-title { font-weight:700; font-size:.95rem; }
+    .method-tab .tab-sub { font-size:.78rem; color:var(--muted); margin-top:3px; }
+    .method-panel { display:none; }
+    .method-panel.active { display:block; }
+
+    /* Gatekeeper dialog mock */
+    .gatekeeper-mock {
+      background:#e8e8e8;
+      border-radius:14px;
+      padding:28px 28px 22px;
+      max-width:300px;
+      margin:20px auto;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      text-align:center;
+      font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    .gk-icon-wrap {
+      width:64px; height:64px; margin:0 auto 14px;
+      position:relative; display:flex; align-items:center; justify-content:center;
+    }
+    .gk-app-icon {
+      width:56px; height:56px;
+      background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899);
+      border-radius:12px;
+    }
+    .gk-warn-badge {
+      position:absolute; bottom:-4px; right:-4px;
+      width:24px; height:24px; background:#f5a623;
+      border-radius:50%; border:2px solid #e8e8e8;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:900; color:#fff; line-height:1;
+    }
+    .gk-title { font-size:13px; font-weight:700; color:#1d1d1f; margin-bottom:8px; }
+    .gk-body { font-size:12px; color:#555; line-height:1.5; margin-bottom:18px; }
+    .gk-btns { display:flex; flex-direction:column; gap:8px; }
+    .gk-btn {
+      padding:7px; border-radius:7px; font-size:13px; font-weight:500;
+      border:none; cursor:default;
+    }
+    .gk-btn.primary { background:#007aff; color:#fff; }
+    .gk-btn.secondary { background:#d1d1d6; color:#1d1d1f; }
+
+    .gk-label {
+      display:inline-block; background:rgba(239,68,68,0.12); color:#ef4444;
+      border:1px solid rgba(239,68,68,0.3); border-radius:6px;
+      font-size:.75rem; font-weight:600; padding:3px 9px; margin-bottom:14px;
+    }
+    kbd {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:5px; padding:2px 7px; font-family:'SF Mono',Menlo,monospace;
+      font-size:.8rem;
+    }
+    .terminal-block {
+      background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
+      border-radius:8px; padding:12px 14px; margin:12px 0;
+      font-family:'SF Mono',Menlo,monospace; font-size:12px;
+      color:#a5f3a5; overflow-x:auto;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,7 +85,7 @@
 <div class="adsense-top">
   <ins class="adsbygoogle"
        style="display:block"
-       data-ad-client="ca-pub-3979207653094537"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
        data-ad-slot="XXXXXXXXXX"
        data-ad-format="horizontal"
        data-full-width-responsive="true"></ins>
@@ -39,78 +109,150 @@
 <div class="page">
 
   <h1>Download for Mac</h1>
-  <p>Free, native macOS app. Drag-and-drop, batch convert, and multiple output formats - all offline.</p>
+  <p>Free, native macOS app. Drag-and-drop, batch convert, multiple formats — 100% offline.</p>
 
-  <!-- Requirements -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;">
+  <!-- Badges -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px;">
     <span class="badge">macOS 14+</span>
     <span class="badge" style="background:rgba(168,85,247,0.12);color:var(--a2);border-color:rgba(168,85,247,0.3);">Apple Silicon &amp; Intel</span>
     <span class="badge" style="background:rgba(99,102,241,0.12);color:var(--a1);border-color:rgba(99,102,241,0.3);">No setup required</span>
   </div>
 
-  <!-- Download Options -->
-  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:48px;">
+  <!-- Method Tabs -->
+  <div class="method-tabs">
+    <div class="method-tab active" onclick="switchTab('dmg')">
+      <div class="tab-icon">📦</div>
+      <div class="tab-title">Download DMG</div>
+      <div class="tab-sub">Classic Mac installer</div>
+    </div>
+    <div class="method-tab" onclick="switchTab('brew')">
+      <div class="tab-icon">🍺</div>
+      <div class="tab-title">Homebrew</div>
+      <div class="tab-sub">No warnings · auto-updates</div>
+    </div>
+  </div>
 
-    <a href="https://github.com/yooyplay/Shortsify/releases/latest/download/Shortsify.dmg"
-       class="btn btn-primary" style="font-size:16px;padding:16px 40px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><rect x="3" y="19" width="18" height="2" rx="1"/></svg>
-      Download Shortsify.dmg
-    </a>
-    <p style="color:var(--muted);font-size:.82rem;">Free · No signup · v1.0.3</p>
+  <!-- ── DMG Panel ──────────────────────────────────────────────── -->
+  <div class="method-panel active" id="panel-dmg">
 
-    <div style="width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;">
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px;">
-        🍺 <strong style="color:var(--text);">Homebrew</strong> — no Gatekeeper warnings, updates automatically
-      </p>
-      <pre style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;font-family:'SF Mono',Menlo,monospace;font-size:12px;color:#a5f3a5;margin:0;overflow-x:auto;">brew tap yooyplay/tap
-brew trust yooyplay/tap
-brew install --cask shortsify</pre>
+    <div style="text-align:center;margin-bottom:36px;">
+      <a href="https://github.com/yooyplay/Shortsify/releases/latest/download/Shortsify.dmg"
+         class="btn btn-primary" style="font-size:16px;padding:16px 40px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><rect x="3" y="19" width="18" height="2" rx="1"/></svg>
+        Download Shortsify.dmg
+      </a>
+      <p style="margin-top:10px;color:var(--muted);font-size:.82rem;">Free · No signup · v1.0.3</p>
+    </div>
+
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Installation steps</h2>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Open the DMG and drag to Applications</h4>
+          <p>Double-click <code>Shortsify.dmg</code>, then drag <code>Shortsify.app</code> into the Applications folder shown in the window.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>macOS will show a security warning — here's how to fix it</h4>
+          <p>Because Shortsify isn't sold through the Mac App Store, macOS shows this on first launch:</p>
+
+          <div class="gatekeeper-mock">
+            <div class="gk-icon-wrap">
+              <div class="gk-app-icon"></div>
+              <div class="gk-warn-badge">!</div>
+            </div>
+            <div class="gk-title">"Shortsify" Not Opened</div>
+            <div class="gk-body">Apple could not verify "Shortsify" is free of malware that may harm your Mac or compromise your privacy.</div>
+            <div class="gk-btns">
+              <button class="gk-btn primary">Move to Trash</button>
+              <button class="gk-btn secondary">Done</button>
+            </div>
+          </div>
+
+          <div style="text-align:center;"><span class="gk-label">⚠ Don't click "Move to Trash"</span></div>
+
+          <p>This warning appears for <em>any</em> app not distributed through Apple's store — it doesn't mean the app is harmful. Shortsify is <a href="https://github.com/yooyplay/shortsify" target="_blank">open source</a> and safe.</p>
+          <p style="margin-top:10px;">To bypass it, open <strong>Terminal</strong> (<kbd>⌘ Space</kbd> → type <em>Terminal</em> → press Enter) and run:</p>
+          <pre class="terminal-block">xattr -cr /Applications/Shortsify.app</pre>
+          <p>Then double-click Shortsify normally. You only need to do this once.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Launch and go</h4>
+          <p>Double-click Shortsify in Applications. On first launch it automatically downloads ffmpeg in the background — no extra setup. Just drop a video and convert.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:var(--radius);padding:16px 20px;margin-top:8px;font-size:.88rem;color:var(--muted);">
+      💡 <strong style="color:var(--text);">Tip:</strong> Want to skip the security warning entirely?
+      <a href="#" onclick="switchTab('brew');return false;" style="color:var(--a2);">Use Homebrew instead</a> — installs with no warnings and keeps itself updated.
     </div>
 
   </div>
 
-  <!-- Steps -->
-  <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">Installation</h2>
-  <div class="steps">
+  <!-- ── Homebrew Panel ─────────────────────────────────────────── -->
+  <div class="method-panel" id="panel-brew">
 
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h4>Open the DMG and drag to Applications</h4>
-        <p>Double-click <code>Shortsify.dmg</code>, then drag <code>Shortsify</code> into the Applications folder shown in the window.</p>
-      </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:28px;">
+      <h3 style="font-size:.95rem;font-weight:700;margin-bottom:8px;">🍺 What is Homebrew?</h3>
+      <p style="font-size:.88rem;color:var(--muted);line-height:1.7;margin:0;">Homebrew is a free, trusted package manager used by millions of Mac developers — think of it as an app store you control from the Terminal. It downloads, verifies, and installs apps safely. It also handles updates automatically. <strong style="color:var(--text);">No Gatekeeper warnings</strong> when installing through Homebrew.</p>
     </div>
 
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h4>Bypass Gatekeeper (one-time, 10 seconds)</h4>
-        <p>Because Shortsify isn't signed with an Apple certificate, macOS blocks the first launch. Open <strong>Terminal</strong> (press <kbd>⌘Space</kbd>, type <em>Terminal</em>) and run:</p>
-        <pre style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;margin-top:10px;font-family:'SF Mono',Menlo,monospace;font-size:12px;color:#a5f3a5;overflow-x:auto;">xattr -cr /Applications/Shortsify.app</pre>
-        <p style="margin-top:8px;">Then double-click the app normally. You only need to do this once.</p>
-      </div>
-    </div>
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Install via Homebrew</h2>
+    <div class="steps">
 
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h4>That's it — no setup needed</h4>
-        <p>On first launch, Shortsify automatically downloads everything it needs. Just drop a video and go.</p>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Install Homebrew (skip if you already have it)</h4>
+          <p>Open Terminal (<kbd>⌘ Space</kbd> → type <em>Terminal</em>) and run:</p>
+          <pre class="terminal-block">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</pre>
+        </div>
       </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Install Shortsify — three commands</h4>
+          <pre class="terminal-block">brew tap yooyplay/tap
+brew trust yooyplay/tap
+brew install --cask shortsify</pre>
+          <p style="margin-top:10px;font-size:.83rem;color:var(--muted);">Homebrew downloads the app, verifies its integrity, and installs it — no security warnings.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Update anytime with one command</h4>
+          <pre class="terminal-block">brew upgrade --cask shortsify</pre>
+        </div>
+      </div>
+
     </div>
 
   </div>
 
   <!-- Privacy note -->
-  <div class="warning">
+  <div class="warning" style="margin-top:32px;">
     <span>🔒</span>
     <div>
-      <strong>100% offline</strong> - Shortsify converts videos locally on your Mac using ffmpeg. No data is sent anywhere. No analytics, no telemetry.
+      <strong>100% offline</strong> — Shortsify converts videos locally on your Mac. No files are uploaded, no data is sent anywhere, no account needed.
     </div>
   </div>
 
   <!-- Prefer browser -->
-  <div style="text-align:center;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+  <div style="text-align:center;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-top:24px;">
     <p style="color:var(--muted);margin-bottom:16px;">Don't want to install anything?</p>
     <a href="online.html" class="btn btn-secondary">
       🌐 Use the browser version instead
@@ -129,6 +271,17 @@ brew install --cask shortsify</pre>
   <span class="emoji">☕</span>
   <span>Enjoy this free tool? Buy me a coffee</span>
 </a>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.method-tab').forEach(function(t, i) {
+    t.classList.toggle('active', (tab === 'dmg' && i === 0) || (tab === 'brew' && i === 1));
+  });
+  document.getElementById('panel-dmg').classList.toggle('active', tab === 'dmg');
+  document.getElementById('panel-brew').classList.toggle('active', tab === 'brew');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
 
 </body>
 </html>
