@@ -3,3 +3,11 @@
 *.dmg
 .DS_Store
 /tmp/
+
+# Source code — kept local only
+Sources/
+Package.swift
+build-app.sh
+make-dmg-bg.swift
+make-icon.swift
+release.sh
