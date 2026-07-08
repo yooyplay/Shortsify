@@ -38,9 +38,11 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: 0;
+  padding: 4px 16px;
+  overflow: hidden;
+  max-height: 60px;
 }
-.adsense-top ins { display: block; width: 100%; max-width: 728px; }
+.adsense-top ins { display: block; width: 728px; height: 90px; max-width: 100%; }
 .adsense-top ins[data-ad-status="unfilled"] { display: none; }
 .ad-placeholder {
   width: 100%;
