@@ -75,7 +75,7 @@
       background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
       border-radius:8px; padding:12px 14px; margin:12px 0;
       font-family:'SF Mono',Menlo,monospace; font-size:12px;
-      color:#a5f3a5; overflow-x:auto;
+      color:#a5f3a5; white-space:pre-wrap; word-break:break-all;
     }
   </style>
 </head>
@@ -109,13 +109,13 @@
 <div class="page">
 
   <h1>Download for Mac</h1>
-  <p>Free, native macOS app. Drag-and-drop, batch convert, multiple formats — 100% offline.</p>
+  <p>Free native Mac app. Drop videos, pick a format, done. Everything runs on your Mac.</p>
 
   <!-- Badges -->
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px;">
     <span class="badge">macOS 14+</span>
     <span class="badge" style="background:rgba(168,85,247,0.12);color:var(--a2);border-color:rgba(168,85,247,0.3);">Apple Silicon &amp; Intel</span>
-    <span class="badge" style="background:rgba(99,102,241,0.12);color:var(--a1);border-color:rgba(99,102,241,0.3);">No setup required</span>
+    <span class="badge" style="background:rgba(99,102,241,0.12);color:var(--a1);border-color:rgba(99,102,241,0.3);">Just open and go</span>
   </div>
 
   <!-- Method Tabs -->
@@ -158,8 +158,8 @@
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-body">
-          <h4>macOS will show a security warning — here's how to fix it</h4>
-          <p>Because Shortsify isn't sold through the Mac App Store, macOS shows this on first launch:</p>
+          <h4>macOS will show a security warning (here's how to get past it)</h4>
+          <p>Because Shortsify isn't on the Mac App Store, macOS blocks it on first launch:</p>
 
           <div class="gatekeeper-mock">
             <div class="gk-icon-wrap">
@@ -176,8 +176,8 @@
 
           <div style="text-align:center;"><span class="gk-label">⚠ Don't click "Move to Trash"</span></div>
 
-          <p>This warning appears for <em>any</em> app not distributed through Apple's store — it doesn't mean the app is harmful. Shortsify is <a href="https://github.com/yooyplay/shortsify" target="_blank">open source</a> and safe.</p>
-          <p style="margin-top:10px;">To bypass it, open <strong>Terminal</strong> (<kbd>⌘ Space</kbd> → type <em>Terminal</em> → press Enter) and run:</p>
+          <p>This happens with any app not sold through Apple's store. It doesn't mean anything is wrong. Shortsify is <a href="https://github.com/yooyplay/shortsify" target="_blank">open source</a>.</p>
+          <p style="margin-top:10px;">To open it anyway, open <strong>Terminal</strong> (<kbd>⌘ Space</kbd>, type Terminal, hit Enter) and run:</p>
           <pre class="terminal-block">xattr -cr /Applications/Shortsify.app</pre>
           <p>Then double-click Shortsify normally. You only need to do this once.</p>
         </div>
@@ -186,16 +186,16 @@
       <div class="step">
         <div class="step-num">3</div>
         <div class="step-body">
-          <h4>Launch and go</h4>
-          <p>Double-click Shortsify in Applications. On first launch it automatically downloads ffmpeg in the background — no extra setup. Just drop a video and convert.</p>
+          <h4>Open and go</h4>
+          <p>Double-click Shortsify in Applications. First launch downloads ffmpeg quietly in the background. Drop a video and you're good.</p>
         </div>
       </div>
 
     </div>
 
     <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:var(--radius);padding:16px 20px;margin-top:8px;font-size:.88rem;color:var(--muted);">
-      💡 <strong style="color:var(--text);">Tip:</strong> Want to skip the security warning entirely?
-      <a href="#" onclick="switchTab('brew');return false;" style="color:var(--a2);">Use Homebrew instead</a> — installs with no warnings and keeps itself updated.
+      💡 <strong style="color:var(--text);">Tip:</strong> Want to skip this entirely?
+      <a href="#" onclick="switchTab('brew');return false;" style="color:var(--a2);">Install via Homebrew</a> and you won't see any warning.
     </div>
 
   </div>
@@ -205,7 +205,7 @@
 
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:28px;">
       <h3 style="font-size:.95rem;font-weight:700;margin-bottom:8px;">🍺 What is Homebrew?</h3>
-      <p style="font-size:.88rem;color:var(--muted);line-height:1.7;margin:0;">Homebrew is a free, trusted package manager used by millions of Mac developers — think of it as an app store you control from the Terminal. It downloads, verifies, and installs apps safely. It also handles updates automatically. <strong style="color:var(--text);">No Gatekeeper warnings</strong> when installing through Homebrew.</p>
+      <p style="font-size:.88rem;color:var(--muted);line-height:1.7;margin:0;">Homebrew is a free package manager for Mac, used by millions of developers. You run a command in Terminal and it handles the download, checksum check, and install. No popups, no Gatekeeper warnings, and updating later is one command.</p>
     </div>
 
     <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">Install via Homebrew</h2>
@@ -223,11 +223,11 @@
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-body">
-          <h4>Install Shortsify — three commands</h4>
+          <h4>Install Shortsify</h4>
           <pre class="terminal-block">brew tap yooyplay/tap
 brew trust yooyplay/tap
 brew install --cask shortsify</pre>
-          <p style="margin-top:10px;font-size:.83rem;color:var(--muted);">Homebrew downloads the app, verifies its integrity, and installs it — no security warnings.</p>
+          <p style="margin-top:10px;font-size:.83rem;color:var(--muted);">Homebrew downloads and installs it. No security warnings.</p>
         </div>
       </div>
 
@@ -247,7 +247,7 @@ brew install --cask shortsify</pre>
   <div class="warning" style="margin-top:32px;">
     <span>🔒</span>
     <div>
-      <strong>100% offline</strong> — Shortsify converts videos locally on your Mac. No files are uploaded, no data is sent anywhere, no account needed.
+      <strong>Runs locally</strong> — your videos never leave your Mac. Nothing is uploaded anywhere.
     </div>
   </div>
 
