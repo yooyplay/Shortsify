@@ -18,8 +18,61 @@
     }
   </script>
 
-  <!-- FFmpeg.wasm v0.11 (self-contained, no cross-origin Worker issue) -->
+  <!-- FFmpeg.wasm v0.11 -->
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+  <style>
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .file-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .file-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+    .file-pill button {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 14px; padding: 0 0 0 8px; line-height: 1;
+    }
+    .file-pill button:hover { color: #ec4899; }
+    .ratio-btn.active {
+      border-color: var(--a2);
+      background: rgba(168,85,247,0.1);
+      color: var(--a2);
+    }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: .84rem;
+      color: var(--muted);
+    }
+    .queue-item .qi-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .queue-item .qi-status { font-size: .75rem; white-space: nowrap; }
+    .queue-item.done   { border-color: rgba(99,102,241,0.3); }
+    .queue-item.active { border-color: var(--a2); }
+    .queue-item.error  { border-color: rgba(236,72,153,0.4); }
+    .qi-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px;
+      background: rgba(168,85,247,0.15); color: var(--a2);
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
 
@@ -52,7 +105,7 @@
   <p style="font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:1.1rem">🔒</span>
     <strong>Your files never leave your device.</strong>
-    <span style="color:var(--muted)">Conversion happens 100% in your browser using WebAssembly. Nothing is uploaded, stored, or sent anywhere - ever.</span>
+    <span style="color:var(--muted)">Conversion happens 100% in your browser using WebAssembly. Nothing is uploaded, stored, or sent anywhere — ever.</span>
   </p>
 </div>
 
@@ -60,7 +113,7 @@
 <div class="page" style="max-width:640px;">
 
   <h1 style="margin-bottom:6px;">Convert in your browser</h1>
-  <p>No install, no account, no uploads. Powered by <a href="https://ffmpegwasm.netlify.app" target="_blank">ffmpeg.wasm</a>.</p>
+  <p>No install, no account, no uploads. Batch + multi-format supported.</p>
 
   <!-- Loading state -->
   <div id="loading-state" style="text-align:center;padding:48px;display:none;">
@@ -71,43 +124,47 @@
     </div>
   </div>
 
-  <!-- Main tool (hidden until ffmpeg loaded) -->
+  <!-- Main tool -->
   <div id="tool" style="display:none;">
 
     <!-- Drop zone -->
     <div class="drop-zone" id="drop-zone">
-      <input type="file" id="file-input" accept="video/*" />
+      <input type="file" id="file-input" accept="video/*" multiple />
       <div class="drop-zone-icon">🎬</div>
-      <h3 id="dz-title">Drop a video here</h3>
-      <p id="dz-sub">or click to choose a file · mp4, mov, avi, mkv…</p>
+      <h3 id="dz-title">Drop videos here</h3>
+      <p id="dz-sub">or click to choose · mp4, mov, avi, mkv · multiple files supported</p>
     </div>
 
-    <!-- Format selector -->
+    <!-- File list -->
+    <div class="file-list" id="file-list"></div>
+
+    <!-- Format selector (multi-select) -->
+    <p style="font-size:.78rem;color:var(--muted);margin:20px 0 8px;">Select one or more output formats:</p>
     <div class="ratio-picker" id="ratio-picker">
-      <button class="ratio-btn active" data-w="1080" data-h="1920">
+      <button class="ratio-btn active" data-w="1080" data-h="1920" data-label="9:16">
         <span class="r-label">9:16</span>
         <span class="r-sub">Shorts / TikTok</span>
       </button>
-      <button class="ratio-btn" data-w="1080" data-h="1080">
+      <button class="ratio-btn" data-w="1080" data-h="1080" data-label="1:1">
         <span class="r-label">1:1</span>
         <span class="r-sub">Instagram</span>
       </button>
-      <button class="ratio-btn" data-w="1080" data-h="1350">
+      <button class="ratio-btn" data-w="1080" data-h="1350" data-label="4:5">
         <span class="r-label">4:5</span>
         <span class="r-sub">IG Feed</span>
       </button>
-      <button class="ratio-btn" data-w="1920" data-h="1080">
+      <button class="ratio-btn" data-w="1920" data-h="1080" data-label="16:9">
         <span class="r-label">16:9</span>
         <span class="r-sub">YouTube</span>
       </button>
     </div>
 
     <!-- Convert button -->
-    <button class="btn btn-primary" id="convert-btn" disabled style="width:100%;justify-content:center;font-size:15px;border-radius:12px;">
-      Choose a video to start
+    <button class="btn btn-primary" id="convert-btn" disabled style="width:100%;justify-content:center;font-size:15px;border-radius:12px;margin-top:4px;">
+      Add videos to start
     </button>
 
-    <!-- Progress -->
+    <!-- Overall progress -->
     <div class="progress-wrap" id="progress-wrap">
       <div class="progress-label" id="progress-label">Converting…</div>
       <div class="progress-bar-bg">
@@ -115,17 +172,12 @@
       </div>
     </div>
 
-    <!-- Download -->
-    <div id="download-wrap" style="display:none;text-align:center;padding:28px;background:var(--surface);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius);margin-top:20px;">
-      <div style="font-size:2.5rem;margin-bottom:10px;">✅</div>
-      <h3 style="margin-bottom:6px;">Done!</h3>
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:18px;" id="dl-filename"></p>
-      <a id="download-link" class="btn btn-primary" style="display:inline-flex;margin-bottom:16px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><rect x="3" y="19" width="18" height="2" rx="1"/></svg>
-        Download converted video
-      </a>
-      <br />
-      <button class="btn btn-secondary" id="reset-btn" style="font-size:13px;padding:8px 18px;">Convert another</button>
+    <!-- Queue list (shown while/after converting) -->
+    <div id="queue-wrap" style="display:none;margin-top:16px;">
+      <div id="queue-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <button class="btn btn-secondary" id="reset-btn" style="width:100%;justify-content:center;margin-top:16px;font-size:13px;display:none;">
+        Convert more videos
+      </button>
     </div>
 
   </div><!-- /#tool -->
@@ -135,7 +187,7 @@
     <h4 style="margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span>🔒</span> How your privacy is protected</h4>
     <ul style="color:var(--muted);font-size:.88rem;line-height:1.8;padding-left:18px;">
       <li>Your video is processed entirely inside your browser using <strong>WebAssembly</strong></li>
-      <li>No file is ever uploaded to any server - not even ours</li>
+      <li>No file is ever uploaded to any server — not even ours</li>
       <li>When you close the tab, everything is gone</li>
       <li>You can even use this tool with your WiFi turned off</li>
     </ul>
@@ -143,9 +195,9 @@
 
   <!-- Prefer native app -->
   <div style="text-align:center;margin-top:28px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
-    <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px;">Want batch processing, drag-and-drop, and no ~30MB load time?</p>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px;">Want faster batch processing with no ~30MB load time?</p>
     <a href="download.html" class="btn btn-secondary" style="font-size:13px;padding:10px 22px;">
-      🖥️ Download the Mac app - it's free
+      🖥️ Download the Mac app — it's free
     </a>
   </div>
 
@@ -167,18 +219,22 @@
 (async () => {
   const { createFFmpeg, fetchFile } = FFmpeg;
 
+  let currentRatio = 0;
+  let totalJobs    = 0;
+
   const ffmpeg = createFFmpeg({
     log: false,
     corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
     progress: ({ ratio }) => {
-      const pct = Math.min(Math.round(ratio * 100), 99);
-      progressBar.style.width = pct + "%";
-      progressLbl.textContent = "Converting... " + pct + "%";
+      if (totalJobs === 0) return;
+      const jobPct  = Math.min(ratio, 1);
+      const overall = ((currentRatio + jobPct) / totalJobs) * 100;
+      progressBar.style.width = Math.min(Math.round(overall), 99) + "%";
     }
   });
 
-  let selectedFile = null;
-  let selectedW = 1080, selectedH = 1920;
+  let selectedFiles   = [];  // File[]
+  let selectedFormats = [];  // [{w, h, label}]
 
   // Elements
   const loadingEl   = document.getElementById("loading-state");
@@ -187,17 +243,16 @@
   const fileInput   = document.getElementById("file-input");
   const dzTitle     = document.getElementById("dz-title");
   const dzSub       = document.getElementById("dz-sub");
+  const fileListEl  = document.getElementById("file-list");
   const convertBtn  = document.getElementById("convert-btn");
   const progressWrap= document.getElementById("progress-wrap");
   const progressBar = document.getElementById("progress-bar");
   const progressLbl = document.getElementById("progress-label");
-  const downloadWrap= document.getElementById("download-wrap");
-  const downloadLink= document.getElementById("download-link");
-  const dlFilename  = document.getElementById("dl-filename");
+  const queueWrap   = document.getElementById("queue-wrap");
+  const queueList   = document.getElementById("queue-list");
   const resetBtn    = document.getElementById("reset-btn");
-  const loadBar     = document.getElementById("load-bar");
 
-  // Load
+  // Load ffmpeg
   loadingEl.style.display = "block";
   try {
     await ffmpeg.load();
@@ -208,101 +263,206 @@
   loadingEl.style.display = "none";
   toolEl.style.display    = "block";
 
-  // Ratio buttons
+  // Default format selection
+  selectedFormats = [{ w: 1080, h: 1920, label: "9:16" }];
+
+  // Format buttons — multi-select toggle
   document.querySelectorAll(".ratio-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".ratio-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      selectedW = +btn.dataset.w;
-      selectedH = +btn.dataset.h;
+      const fmt = { w: +btn.dataset.w, h: +btn.dataset.h, label: btn.dataset.label };
+      const idx = selectedFormats.findIndex(f => f.label === fmt.label);
+      if (idx >= 0) {
+        if (selectedFormats.length === 1) return; // keep at least one
+        selectedFormats.splice(idx, 1);
+        btn.classList.remove("active");
+      } else {
+        selectedFormats.push(fmt);
+        btn.classList.add("active");
+      }
+      updateConvertBtn();
     });
   });
 
-  // File selection
-  function setFile(file) {
-    if (!file || !file.type.startsWith("video/")) return;
-    selectedFile = file;
-    dzTitle.textContent = file.name;
-    dzSub.textContent   = (file.size / 1024 / 1024).toFixed(1) + " MB";
-    convertBtn.disabled = false;
-    convertBtn.textContent = "Convert";
+  // File handling
+  function addFiles(newFiles) {
+    for (const f of newFiles) {
+      if (!f.type.startsWith("video/")) continue;
+      if (selectedFiles.find(x => x.name === f.name && x.size === f.size)) continue;
+      selectedFiles.push(f);
+    }
+    renderFileList();
+    updateConvertBtn();
   }
 
-  fileInput.addEventListener("change", () => setFile(fileInput.files[0]));
+  function removeFile(idx) {
+    selectedFiles.splice(idx, 1);
+    renderFileList();
+    updateConvertBtn();
+  }
+
+  function renderFileList() {
+    fileListEl.innerHTML = "";
+    selectedFiles.forEach((f, i) => {
+      const pill = document.createElement("div");
+      pill.className = "file-pill";
+      pill.innerHTML = `<span>${f.name} <span style="opacity:.5">${(f.size/1024/1024).toFixed(1)} MB</span></span>
+        <button onclick="removeFile(${i})" title="Remove">✕</button>`;
+      fileListEl.appendChild(pill);
+    });
+    if (selectedFiles.length > 0) {
+      dzTitle.textContent = selectedFiles.length === 1
+        ? "1 video selected"
+        : selectedFiles.length + " videos selected";
+      dzSub.textContent = "Drop more to add";
+    } else {
+      dzTitle.textContent = "Drop videos here";
+      dzSub.textContent   = "or click to choose · multiple files supported";
+    }
+  }
+
+  window.removeFile = removeFile;
+
+  function updateConvertBtn() {
+    const n = selectedFiles.length;
+    const f = selectedFormats.length;
+    if (n === 0) {
+      convertBtn.disabled = true;
+      convertBtn.textContent = "Add videos to start";
+    } else {
+      convertBtn.disabled = false;
+      const jobs = n * f;
+      convertBtn.textContent = jobs === 1
+        ? "Convert"
+        : `Convert ${jobs} file${jobs > 1 ? "s" : ""} (${n} video${n>1?"s":""} × ${f} format${f>1?"s":""})`;
+    }
+  }
+
+  fileInput.addEventListener("change", () => addFiles(Array.from(fileInput.files)));
   dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("dragover"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault();
     dropZone.classList.remove("dragover");
-    setFile(e.dataTransfer.files[0]);
+    addFiles(Array.from(e.dataTransfer.files));
   });
 
-  // Convert
+  // Convert queue
   convertBtn.addEventListener("click", async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0 || selectedFormats.length === 0) return;
 
-    convertBtn.disabled = true;
-    downloadWrap.style.display = "none";
-    progressWrap.classList.add("visible");
-    progressBar.style.width = "0%";
-    progressLbl.textContent = "Converting...";
-
-    const ext     = selectedFile.name.split(".").pop() || "mp4";
-    const base    = selectedFile.name.replace(/\.[^.]+$/, "");
-    const outName = base + "_short." + ext;
-    const inName  = "input." + ext;
-    const outFile = "output." + ext;
-
-    const vf = "scale=" + selectedW + ":" + selectedH +
-               ":force_original_aspect_ratio=decrease,pad=" +
-               selectedW + ":" + selectedH + ":(ow-iw)/2:(oh-ih)/2:black";
-
-    try {
-      ffmpeg.FS("writeFile", inName, await fetchFile(selectedFile));
-      await ffmpeg.run(
-        "-i", inName,
-        "-vf", vf,
-        "-c:v", "libx264", "-crf", "18", "-preset", "fast",
-        "-c:a", "aac", "-b:a", "192k",
-        "-movflags", "+faststart",
-        "-y", outFile
-      );
-
-      const data = ffmpeg.FS("readFile", outFile);
-      const blob = new Blob([data.buffer], { type: "video/mp4" });
-      const url  = URL.createObjectURL(blob);
-
-      progressBar.style.width = "100%";
-      progressLbl.textContent = "Done!";
-      downloadLink.href       = url;
-      downloadLink.download   = outName;
-      dlFilename.textContent  = outName;
-
-      setTimeout(() => {
-        progressWrap.classList.remove("visible");
-        downloadWrap.style.display = "block";
-      }, 400);
-
-      // Cleanup FS
-      try { ffmpeg.FS("unlink", inName); ffmpeg.FS("unlink", outFile); } catch(_) {}
-
-    } catch (err) {
-      progressLbl.textContent = "Error: " + err.message;
-      progressBar.style.width = "0%";
-      convertBtn.disabled = false;
+    // Build job list: all files × all formats
+    const jobs = [];
+    for (const file of selectedFiles) {
+      for (const fmt of selectedFormats) {
+        jobs.push({ file, fmt });
+      }
     }
+
+    totalJobs    = jobs.length;
+    currentRatio = 0;
+
+    // Disable controls
+    convertBtn.disabled = true;
+    dropZone.style.pointerEvents = "none";
+    dropZone.style.opacity = "0.5";
+    fileListEl.style.pointerEvents = "none";
+    document.querySelectorAll(".ratio-btn").forEach(b => b.style.pointerEvents = "none");
+
+    // Build queue UI
+    queueList.innerHTML = "";
+    queueWrap.style.display  = "block";
+    progressWrap.classList.add("visible");
+    progressBar.style.width  = "0%";
+    progressLbl.textContent  = "Starting…";
+
+    const items = jobs.map((job, i) => {
+      const el = document.createElement("div");
+      el.className = "queue-item";
+      el.id = "qi-" + i;
+      const base = job.file.name.replace(/\.[^.]+$/, "");
+      const ext  = job.file.name.split(".").pop() || "mp4";
+      const outName = base + "_" + job.fmt.label.replace(":", "x") + "." + ext;
+      el.innerHTML = `
+        <span class="qi-badge">${job.fmt.label}</span>
+        <span class="qi-name">${outName}</span>
+        <span class="qi-status">Waiting…</span>`;
+      queueList.appendChild(el);
+      return { el, outName, ext };
+    });
+
+    // Process each job sequentially
+    for (let i = 0; i < jobs.length; i++) {
+      const { file, fmt } = jobs[i];
+      const { el, outName, ext } = items[i];
+      const base    = file.name.replace(/\.[^.]+$/, "");
+      const inName  = "input_" + i + "." + ext;
+      const outFile = "output_" + i + "." + ext;
+
+      el.classList.add("active");
+      el.querySelector(".qi-status").textContent = "Converting…";
+      progressLbl.textContent = `Converting ${i + 1} of ${jobs.length}…`;
+
+      const vf = `scale=${fmt.w}:${fmt.h}:force_original_aspect_ratio=decrease,` +
+                 `pad=${fmt.w}:${fmt.h}:(ow-iw)/2:(oh-ih)/2:black`;
+      try {
+        ffmpeg.FS("writeFile", inName, await fetchFile(file));
+        await ffmpeg.run(
+          "-i", inName,
+          "-vf", vf,
+          "-c:v", "libx264", "-crf", "18", "-preset", "fast",
+          "-c:a", "aac", "-b:a", "192k",
+          "-movflags", "+faststart",
+          "-y", outFile
+        );
+
+        const data = ffmpeg.FS("readFile", outFile);
+        const blob = new Blob([data.buffer], { type: "video/mp4" });
+        const url  = URL.createObjectURL(blob);
+
+        // Auto-download
+        const a = document.createElement("a");
+        a.href = url; a.download = outName;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+
+        // Show download link in queue item too
+        el.classList.remove("active");
+        el.classList.add("done");
+        el.querySelector(".qi-status").innerHTML =
+          `✅ <a href="${url}" download="${outName}" style="color:var(--a1);">Save again</a>`;
+
+        try { ffmpeg.FS("unlink", inName); ffmpeg.FS("unlink", outFile); } catch(_) {}
+
+      } catch (err) {
+        el.classList.remove("active");
+        el.classList.add("error");
+        el.querySelector(".qi-status").textContent = "❌ Error";
+      }
+
+      currentRatio = i + 1;
+    }
+
+    // Done
+    progressBar.style.width = "100%";
+    progressLbl.textContent = `Done! ${jobs.length} file${jobs.length > 1 ? "s" : ""} converted.`;
+    resetBtn.style.display  = "flex";
   });
 
   // Reset
   resetBtn.addEventListener("click", () => {
-    selectedFile = null;
+    selectedFiles = [];
     fileInput.value = "";
-    dzTitle.textContent = "Drop a video here";
-    dzSub.textContent   = "or click to choose a file";
-    convertBtn.disabled = true;
-    convertBtn.textContent = "Choose a video to start";
-    downloadWrap.style.display = "none";
+    renderFileList();
+    updateConvertBtn();
+    queueWrap.style.display  = "none";
+    queueList.innerHTML = "";
+    resetBtn.style.display   = "none";
     progressWrap.classList.remove("visible");
+    progressBar.style.width  = "0%";
+    dropZone.style.pointerEvents = "auto";
+    dropZone.style.opacity   = "1";
+    fileListEl.style.pointerEvents = "auto";
+    document.querySelectorAll(".ratio-btn").forEach(b => b.style.pointerEvents = "auto");
   });
 
 })();
