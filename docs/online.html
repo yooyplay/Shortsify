@@ -229,20 +229,43 @@
 <script>
 (async () => {
   const { createFFmpeg, fetchFile } = FFmpeg;
+  const CORE = "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js";
+  const CONCURRENCY = 3; // max parallel jobs
 
-  let currentRatio = 0;
-  let totalJobs    = 0;
+  // ── Worker pool ─────────────────────────────────────────────────
+  // Each worker = { ff, busy, progressCb }
+  const pool = [];
 
-  const ffmpeg = createFFmpeg({
-    log: false,
-    corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
-    progress: ({ ratio }) => {
-      if (totalJobs === 0) return;
-      const jobPct  = Math.min(ratio, 1);
-      const overall = ((currentRatio + jobPct) / totalJobs) * 100;
-      progressBar.style.width = Math.min(Math.round(overall), 99) + "%";
+  function makeWorker() {
+    const w = { ff: null, busy: false, progressCb: null };
+    w.ff = createFFmpeg({
+      log: false,
+      corePath: CORE,
+      progress: ({ ratio }) => { if (w.progressCb) w.progressCb(Math.min(ratio, 1)); }
+    });
+    return w;
+  }
+
+  async function acquireWorker() {
+    const free = pool.find(w => !w.busy);
+    if (free) { free.busy = true; return free; }
+    if (pool.length < CONCURRENCY) {
+      const w = makeWorker();
+      await w.ff.load();
+      w.busy = true;
+      pool.push(w);
+      return w;
     }
-  });
+    // Wait for a slot
+    return new Promise(resolve => {
+      const iv = setInterval(() => {
+        const f = pool.find(w => !w.busy);
+        if (f) { clearInterval(iv); f.busy = true; resolve(f); }
+      }, 100);
+    });
+  }
+
+  function releaseWorker(w) { w.busy = false; w.progressCb = null; }
 
   let selectedFiles   = [];  // File[]
   let selectedFormats = [];  // [{w, h, label}]
@@ -263,10 +286,12 @@
   const queueList   = document.getElementById("queue-list");
   const resetBtn    = document.getElementById("reset-btn");
 
-  // Load ffmpeg
+  // Load first worker on page load
   loadingEl.style.display = "block";
   try {
-    await ffmpeg.load();
+    const first = makeWorker();
+    await first.ff.load();
+    pool.push(first);
   } catch (e) {
     loadingEl.innerHTML = `<p style="color:#ec4899">Failed to load ffmpeg.wasm. Try Chrome or Edge.<br><small>${e.message}</small></p>`;
     return;
@@ -369,9 +394,6 @@
       }
     }
 
-    totalJobs    = jobs.length;
-    currentRatio = 0;
-
     // Disable controls
     convertBtn.disabled = true;
     dropZone.style.pointerEvents = "none";
@@ -401,61 +423,76 @@
       return { el, outName, ext };
     });
 
-    // Process each job sequentially
-    for (let i = 0; i < jobs.length; i++) {
+    // ── Parallel job runner ────────────────────────────────────────
+    const jobProgress = new Array(jobs.length).fill(0);
+    let doneCount = 0;
+
+    function updateOverall() {
+      const sum = jobProgress.reduce((a, b) => a + b, 0);
+      const pct = Math.min((sum / jobs.length) * 100, 99);
+      progressBar.style.width = Math.round(pct) + "%";
+    }
+
+    async function runJob(i) {
       const { file, fmt } = jobs[i];
       const { el, outName, ext } = items[i];
-      const base    = file.name.replace(/\.[^.]+$/, "");
       const inName  = "input_" + i + "." + ext;
       const outFile = "output_" + i + "." + ext;
+      const vf = `scale=${fmt.w}:${fmt.h}:force_original_aspect_ratio=decrease,` +
+                 `pad=${fmt.w}:${fmt.h}:(ow-iw)/2:(oh-ih)/2:black`;
+
+      const w = await acquireWorker();
+      w.progressCb = ratio => {
+        jobProgress[i] = ratio;
+        updateOverall();
+        el.querySelector(".qi-status").textContent = Math.round(ratio * 100) + "%";
+      };
 
       el.classList.add("active");
       el.querySelector(".qi-status").textContent = "Converting…";
-      progressLbl.textContent = `Converting ${i + 1} of ${jobs.length}…`;
 
-      const vf = `scale=${fmt.w}:${fmt.h}:force_original_aspect_ratio=decrease,` +
-                 `pad=${fmt.w}:${fmt.h}:(ow-iw)/2:(oh-ih)/2:black`;
       try {
-        ffmpeg.FS("writeFile", inName, await fetchFile(file));
-        await ffmpeg.run(
-          "-i", inName,
-          "-vf", vf,
+        w.ff.FS("writeFile", inName, await fetchFile(file));
+        await w.ff.run(
+          "-i", inName, "-vf", vf,
           "-c:v", "libx264", "-crf", "18", "-preset", "fast",
           "-c:a", "aac", "-b:a", "192k",
-          "-movflags", "+faststart",
-          "-y", outFile
+          "-movflags", "+faststart", "-y", outFile
         );
 
-        const data = ffmpeg.FS("readFile", outFile);
+        const data = w.ff.FS("readFile", outFile);
         const blob = new Blob([data.buffer], { type: "video/mp4" });
         const url  = URL.createObjectURL(blob);
 
-        // Auto-download
         const a = document.createElement("a");
         a.href = url; a.download = outName;
         document.body.appendChild(a); a.click();
         document.body.removeChild(a);
 
-        // Show download link in queue item too
-        el.classList.remove("active");
-        el.classList.add("done");
+        jobProgress[i] = 1;
+        el.classList.remove("active"); el.classList.add("done");
         el.querySelector(".qi-status").innerHTML =
           `✅ <a href="${url}" download="${outName}" style="color:var(--a1);">Save again</a>`;
 
-        try { ffmpeg.FS("unlink", inName); ffmpeg.FS("unlink", outFile); } catch(_) {}
-
-      } catch (err) {
-        el.classList.remove("active");
-        el.classList.add("error");
+        try { w.ff.FS("unlink", inName); w.ff.FS("unlink", outFile); } catch(_) {}
+      } catch(err) {
+        el.classList.remove("active"); el.classList.add("error");
         el.querySelector(".qi-status").textContent = "❌ Error";
       }
 
-      currentRatio = i + 1;
+      releaseWorker(w);
+      doneCount++;
+      progressLbl.textContent = doneCount < jobs.length
+        ? `${doneCount} of ${jobs.length} done…`
+        : `Done! ${jobs.length} file${jobs.length > 1 ? "s" : ""} converted.`;
+      updateOverall();
     }
+
+    progressLbl.textContent = `Converting ${jobs.length} file${jobs.length > 1 ? "s" : ""} in parallel…`;
+    await Promise.all(jobs.map((_, i) => runJob(i)));
 
     // Done
     progressBar.style.width = "100%";
-    progressLbl.textContent = `Done! ${jobs.length} file${jobs.length > 1 ? "s" : ""} converted.`;
     resetBtn.style.display  = "flex";
   });
 
