@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact · Shortsify</title>
+  <meta name="description" content="Get in touch with the Shortsify team." />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JB81H4N868"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JB81H4N868');
+  </script>
+  <style>
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: .95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--a2);
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 130px;
+    }
+    .form-group select option {
+      background: var(--surface2);
+    }
+    .submit-btn {
+      align-self: flex-start;
+      background: var(--grad);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .2s;
+    }
+    .submit-btn:hover { opacity: .9; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <img src="icon.png" alt="Shortsify" />
+    Shortsify
+  </a>
+  <div class="nav-links">
+    <a href="download.html">Download</a>
+    <a href="online.html">Use Online</a>
+    <a href="https://github.com/yooyplay/shortsify" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1>Contact Us</h1>
+  <p>Have a question, bug report, or feature request? Send us a message and we will get back to you.</p>
+
+  <form
+    class="contact-form"
+    action="https://formsubmit.co/yooyplay@gmail.com"
+    method="POST"
+  >
+    <!-- FormSubmit config -->
+    <input type="hidden" name="_subject" value="Shortsify Contact Form" />
+    <input type="hidden" name="_captcha" value="false" />
+    <input type="hidden" name="_next" value="https://yooyplay.github.io/Shortsify/contact-thanks.html" />
+    <input type="text" name="_honey" style="display:none" />
+
+    <div class="form-group">
+      <label for="name">Your name</label>
+      <input type="text" id="name" name="name" placeholder="Jane Smith" required />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Your email</label>
+      <input type="email" id="email" name="email" placeholder="jane@example.com" required />
+    </div>
+
+    <div class="form-group">
+      <label for="topic">Topic</label>
+      <select id="topic" name="topic">
+        <option value="bug">Bug report</option>
+        <option value="feature">Feature request</option>
+        <option value="question">General question</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" name="message" placeholder="Tell us what's on your mind…" required></textarea>
+    </div>
+
+    <button type="submit" class="submit-btn">Send Message</button>
+  </form>
+</div>
+
+<footer>
+  <p>
+    Shortsify · <a href="https://github.com/yooyplay/shortsify" target="_blank">View on GitHub</a> ·
+    <a href="privacy.html">Privacy Policy</a> ·
+    <a href="terms.html">Terms of Use</a> ·
+    <a href="contact.html">Contact</a>
+  </p>
+</footer>
+
+<a href="https://ko-fi.com/yooyplay" target="_blank" class="kofi-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;background:#00b9fe;color:#fff;padding:10px 20px;border-radius:50px;font-weight:600;font-size:14px;text-decoration:none;box-shadow:0 4px 24px rgba(0,185,254,0.45);">☕ Support me</a>
+
+</body>
+</html>
