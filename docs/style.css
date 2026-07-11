@@ -30,6 +30,8 @@ a { color: var(--a2); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── AdSense Banner ───────────────────────────────────────────── */
+/* TODO: remove display:none once AdSense is approved */
+.adsense-top { display: none !important; }
 .adsense-top {
   width: 100%;
   background: var(--surface);
